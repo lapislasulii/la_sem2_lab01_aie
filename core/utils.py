@@ -23,7 +23,12 @@ def validate_shape(
         ValueError: если хотя бы один элемент shape не является
                     положительным целым числом
     """
-    pass
+    if not isinstance(shape, (tuple, list)):
+        raise TypeError("shape должен быть tuple или list")
+    for n in shape:
+        if not isinstance(n, int) or isinstance(n, bool) or n <= 0:
+            raise ValueError("Все размеры shape должны быть положительными целыми")
+    return tuple(shape)
 
 
 def compute_size(shape: tuple[int, ...]) -> int:
@@ -33,7 +38,10 @@ def compute_size(shape: tuple[int, ...]) -> int:
     Args:
         shape: кортеж размеров тензора (n_0, n_1, ..., n_{d-1})
     """
-    pass
+    size = 1
+    for n in shape:
+        size *= n
+    return size
 
 
 def compute_strides(shape: tuple[int, ...]) -> tuple[int, ...]:
@@ -46,7 +54,10 @@ def compute_strides(shape: tuple[int, ...]) -> tuple[int, ...]:
     Args:
         shape: кортеж размеров тензора (n_0, n_1, ..., n_{d-1})
     """
-    pass
+    strides = [1] * len(shape)
+    for k in range(len(shape) - 2, -1, -1):
+        strides[k] = strides[k + 1] * shape[k + 1]
+    return tuple(strides)
 
 
 def multi_index_to_flat(
@@ -61,7 +72,10 @@ def multi_index_to_flat(
         multi_index: кортеж индексов (i_0, i_1, ..., i_{d-1})
         strides:     кортеж шагов   (s_0, s_1, ..., s_{d-1})
     """
-    pass
+    flat = 0
+    for i, s in zip(multi_index, strides):
+        flat += i * s
+    return flat
 
 
 def flat_to_multi_index(
@@ -75,7 +89,11 @@ def flat_to_multi_index(
         flat_index: плоский индекс в списке данных
         shape:      кортеж размеров тензора (n_0, n_1, ..., n_{d-1})
     """
-    pass
+    multi_index = [0] * len(shape)
+    for k in range(len(shape) - 1, -1, -1):
+        multi_index[k] = flat_index % shape[k]
+        flat_index //= shape[k]
+    return tuple(multi_index)
 
 def check_shapes_match(
     shape1: tuple[int, ...],
@@ -94,4 +112,5 @@ def check_shapes_match(
     Raises:
         ValueError: если формы не совпадают
     """
-    pass
+    if tuple(shape1) != tuple(shape2):
+        raise ValueError(f"Формы тензоров не совпадают: {shape1} != {shape2}")
